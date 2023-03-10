@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
+#include <QSqlError>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QNetworkProxy>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -7,8 +11,52 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //创建tcp连接对象
     tcpclient = new QTcpSocket(this);
     connect(tcpclient,&QTcpSocket::readyRead,this,&MainWindow::tcpclientreaddata);
+    //数据库连接对象
+    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
+    //数据库ip
+    db.setHostName("127.0.0.1");
+    //数据库端口
+    db.setPort(5432);
+    //数据库名称
+    db.setDatabaseName("test");
+    //数据库用户名
+    db.setUserName("postgres");
+    //数据库密码
+    db.setPassword("postgres");
+    if(!db.open())
+    {
+        qDebug()<<"connect db faild";
+    }
+    else
+    {
+        qDebug()<<"connect db ok";
+    }
+    //插入数据
+    //    QSqlQuery query(db);
+    //    QString cmd = "insert into test values(1,'haoyuxin','haoyuxin123')";
+    ////    QString cmd = "delete from test where id=1";
+    //    qDebug()<<"sql:"<<cmd;
+    //    if(!query.exec(cmd)){
+    //        qDebug()<<"insert error!";
+    //    }else{
+    //        qDebug()<<"insert to db!";
+    //    }
+    //查询数据
+    QSqlQuery query(db);
+    QString cmd ="select * from test;";
+    if(!query.exec(cmd)){
+        qDebug()<<"select error!";
+    }else{
+        while(query.next()){
+            qDebug()<<"id:"<<query.value(0).toString();
+            qDebug()<<"username:"<<query.value(1).toString();
+            qDebug()<<"password:"<<query.value(2).toString();
+        }
+    }
+
 }
 
 MainWindow::~MainWindow()
@@ -40,9 +88,10 @@ void MainWindow::on_psBt_connect_clicked()
         tcpclient->connectToHost(serverip,serverport);
         //等待连接成功
         if(!tcpclient->waitForConnected(30000)) {
-           qDebug() << "Connection failed!";
-           return;
+            qDebug() << "Connection failed!";
+            return;
         }
+        qDebug() << "Connection success!";
         ui->psBt_connect->setText("已连接");
     }
     //已连接状态 去断开

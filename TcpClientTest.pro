@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,6 +17,11 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui
+
+INCLUDEPATH += "C:\pgsql\include"
+
+LIBS += "C:\pgsql\lib\libpq.lib"
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
